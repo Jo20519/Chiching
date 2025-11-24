@@ -1,0 +1,278 @@
+{
+    "info": {
+        "name": "Chiching API",
+        "_postman_id": "chiching-api-collection",
+        "description": "Postman collection for Chiching savings app API built with Laravel.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Register",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"user@example.com\",\n    \"password\": \"password\"\n}"
+                },
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/register",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "register"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Login",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "var jsonData = pm.response.json();",
+                            "pm.environment.set('auth_token', jsonData.token);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password\"\n}"
+                },
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/login",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "login"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Logout",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{auth_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/logout",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "logout"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Create Group",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{auth_token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"name\": \"Savings Group A\",\n    \"description\": \"Monthly contribution group\",\n    \"contribution_amount\": 500\n}"
+                },
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/groups",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "groups"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Join Group",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{auth_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/groups/1/join",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "groups",
+                        "1",
+                        "join"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Make Contribution",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{auth_token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"amount\": 1000\n}"
+                },
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/groups/1/contribute",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "groups",
+                        "1",
+                        "contribute"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Request Withdrawal",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{auth_token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"amount\": 500,\n    \"reason\": \"Emergency\"\n}"
+                },
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/groups/1/withdraw",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "groups",
+                        "1",
+                        "withdraw"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Approve Withdrawal",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{auth_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/withdrawals/1/approve",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "withdrawals",
+                        "1",
+                        "approve"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "View Transactions",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{auth_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/transactions",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "transactions"
+                    ]
+                }
+            }
+        }
+    ]
+}
