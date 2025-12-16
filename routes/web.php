@@ -13,7 +13,7 @@ use App\Http\Controllers\PageController;
 |
 | Here is where you can register web routes for your application. These
 | routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
+| contains the "web" middleware group. Now create something great! 
 |
 */
 
@@ -31,7 +31,7 @@ Route::get('/offline', function () {
 
 
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+
 Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'user']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -62,7 +62,10 @@ Route::get('/groups', function () {
 
 Route::get('/groups/{id}', [GroupController::class, 'show']);
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/groups', [TransactionController::class, 'showGroups']);
-    Route::get('/groups/{id}/transactions', [TransactionController::class, 'showGroupTransactions']);
-});
+Route::get('/groups/{id}/transactions-page', [PageController::class, 'transactionsPage'])
+     ->name('group.transactions.page');
+
+     Route::get('/groups/{id}/transactions', function ($id) {
+        return view('transactions', ['id' => $id]);
+    })->name('transactions.page');
+    

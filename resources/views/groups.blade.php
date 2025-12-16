@@ -45,15 +45,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    // Fetch user's groups
+    // Fetch user's groups from API
     try {
-        const response = await fetch("http://127.0.0.1:8000/api/groups", {
-            headers: { "Authorization": "Bearer " + token, "Accept": "application/json" }
+        const response = await fetch("/api/user/groups", {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Accept": "application/json"
+            }
         });
 
         const data = await response.json();
-        console.log("GROUP DATA:", data);
-
         loading.style.display = "none";
 
         if (response.ok && data.groups && data.groups.length > 0) {
@@ -62,20 +64,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             noGroups.style.display = "block";
         }
 
-        // Filter groups
-        searchInput.addEventListener("keyup", (e) => {
-            const query = e.target.value.toLowerCase();
-            document.querySelectorAll(".group-card").forEach(card => {
-                card.style.display = card.textContent.toLowerCase().includes(query) ? "block" : "none";
-            });
-        });
-
     } catch (error) {
         console.error("Error fetching groups:", error);
         loading.textContent = "Unable to load groups. Try again later.";
     }
 
-    // Render groups function
+    // Render groups list
     function renderGroups(groups) {
         groupsList.innerHTML = "";
         groups.forEach(group => {
@@ -90,15 +84,44 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <h4 style="color:#0d6efd;">${group.name}</h4>
                 <p>${group.description || "No description provided."}</p>
                 <p><strong>Members:</strong> ${group.members_count || '—'}</p>
-                <p><strong>Total Savings:</strong> KSh ${group.total_savings || '0'}</p>
-                <button onclick="viewGroup(${group.id})"
+                <button class="view-group-btn" data-id="${group.id}"
                     style="background-color:#0d6efd; color:white; border:none; padding:6px 12px; border-radius:5px; cursor:pointer;">
                     View Group
+                </button>
+
+                <button class="view-group-transactions-btn" data-id="${group.id}"
+                    style="background-color:#198754; color:white; border:none; padding:6px 12px; border-radius:5px; cursor:pointer;">
+                    View Transactions
                 </button>
             `;
             groupsList.appendChild(li);
         });
+
+        // Attach click handlers for View Group buttons
+        document.querySelectorAll(".view-group-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const groupId = e.target.getAttribute("data-id");
+                viewGroup(groupId);
+            });
+        });
+
+        
+        // Attach click handlers for View Group  Transactions buttons
+        document.querySelectorAll(".view-group-transactions-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const groupId = e.target.getAttribute("data-id");
+                viewGroupTransactions(groupId);
+            });
+        });
     }
+
+    // Search/filter functionality
+    searchInput.addEventListener("keyup", (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll(".group-card").forEach(card => {
+            card.style.display = card.textContent.toLowerCase().includes(query) ? "block" : "none";
+        });
+    });
 
     // Navigation actions
     document.getElementById("createGroupBtn").addEventListener("click", () => {
@@ -108,13 +131,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("joinGroupBtn").addEventListener("click", () => {
         window.location.href = "/join-group";
     });
-
-    
 });
 
-// View group function
+// View group page using Blade route (public)
 function viewGroup(groupId) {
     window.location.href = `/groups/${groupId}`;
 }
+//View group transaction page using Blade route (public)
+function viewGroupTransactions(groupId) {
+    window.location.href = `/groups/${groupId}/transactions`;
+}
+
 </script>
-@endsection

@@ -2,26 +2,38 @@
 
 @section('content')
 <div class="container" style="max-width:900px; margin-top:40px;">
-    <h2 style="text-align:center; color:#0d6efd;">Your Groups</h2>
-    <p style="text-align:center;">Select a group to view its transactions</p>
+    <h2 id="groupName" style="text-align:center; color:#0d6efd; margin-bottom:20px;">
+        Loading group...
+    </h2>
 
-    <div id="groupsContainer" style="margin-top:30px; text-align:center;">
-        <p id="loading">Loading your groups...</p>
-        <div id="groupsList" style="display:none;"></div>
-        <p id="noGroups" style="display:none;">No groups found.</p>
+    <div id="transactionsContainer">
+        <p id="loading" style="text-align:center;">Loading transactions...</p>
+        <ul id="transactionsList" style="list-style:none; padding:0;"></ul>
+        <p id="noTransactions" style="display:none; text-align:center; margin-top:20px;">
+            No transactions found for this group.
+        </p>
     </div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("auth_token");
+    const transactionsList = document.getElementById("transactionsList");
+    const loading = document.getElementById("loading");
+    const noTransactions = document.getElementById("noTransactions");
+    const groupNameEl = document.getElementById("groupName");
+
     if (!token) {
         window.location.href = "/login";
         return;
     }
 
+    const groupId = @json($id); // passed from controller
+  
+
     try {
-        const response = await fetch("http://127.0.0.1:8000/api/groups", {
+        // Fetch group info and transactions
+        const response =  await fetch(`http://127.0.0.1:8000/api/groups/${groupId}/transactions`, {
             headers: {
                 "Authorization": "Bearer " + token,
                 "Accept": "application/json"
@@ -29,35 +41,38 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         const data = await response.json();
-        const groupsList = document.getElementById("groupsList");
-        const loading = document.getElementById("loading");
-        const noGroups = document.getElementById("noGroups");
-
         loading.style.display = "none";
 
-        if (data.groups && data.groups.data && data.groups.data.length > 0) {
-            groupsList.style.display = "block";
-            data.groups.data.forEach(group => {
-                const div = document.createElement("div");
-                div.style = "border:1px solid #ccc; border-radius:8px; padding:15px; margin:10px auto; max-width:600px; background:#f9f9f9;";
-                div.innerHTML = `
-                    <h4 style="color:#0d6efd;">${group.name}</h4>
-                    <p>${group.description || "No description provided."}</p>
-                    <p><strong>Members:</strong> ${group.members_count || 0}</p>
-                    <button onclick="window.location.href='/groups/${group.id}/transactions'"
-                        style="background-color:#0d6efd; color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">
-                        View Transactions
-                    </button>
-                `;
-                groupsList.appendChild(div);
-            });
+        if (response.ok) {
+            // Set actual group name
+            groupNameEl.textContent = `Transactions for ${data.group_name}`;
+
+            if (data.transactions && data.transactions.length > 0) {
+                data.transactions.forEach(tx => {
+                    const li = document.createElement("li");
+                    li.style.border = "1px solid #ccc";
+                    li.style.borderRadius = "8px";
+                    li.style.padding = "12px";
+                    li.style.marginBottom = "10px";
+                    li.style.background = "#f9f9f9";
+                    li.innerHTML = `
+                        <p><strong>User:</strong> ${tx.user.name}</p>
+                        <p><strong>Amount:</strong> ${tx.amount}</p>
+                        <p><strong>Date:</strong> ${new Date(tx.created_at).toLocaleString()}</p>
+                    `;
+                    transactionsList.appendChild(li);
+                });
+            } else {
+                noTransactions.style.display = "block";
+            }
         } else {
-            noGroups.style.display = "block";
+            groupNameEl.textContent = "Group not found";
+            noTransactions.style.display = "block";
         }
 
     } catch (error) {
-        console.error("Error loading groups:", error);
-        document.getElementById("loading").textContent = "Failed to load groups.";
+        console.error("Error loading transactions:", error);
+        loading.textContent = "Failed to load transactions.";
     }
 });
 </script>

@@ -7,33 +7,43 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
-{
-    // GET /api/groups/{id}/transactions
-    public function index($id, Request $request)
-{
-    $user = $request->user();
-
-    // membership check
-    $isMember = $user->groups()->where('groups.id', $id)->exists();
-    if (!$isMember) {
+{public function index($id, Request $request)
+    {
+        $user = $request->user();
+    
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+    
+        // membership check
+        $isMember = $user->groups()->where('groups.id', $id)->exists();
+        if (!$isMember) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: not a member of this group.'
+            ], 403);
+        }
+    
+        // GET GROUP NAME HERE
+        $group = \App\Models\Group::findOrFail($id);
+    
+        $transactions = \App\Models\Transaction::with('user')
+            ->where('group_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+    
         return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized: not a member of this group.'
-        ], 403);
+            'success' => true,
+            'group_name' => $group->name,    //  <-- ⭐ ADD THIS
+            'transactions' => $transactions->items(),
+            'current_page' => $transactions->currentPage(),
+            'last_page' => $transactions->lastPage(),
+        ]);
     }
-
-    $transactions = \App\Models\Transaction::with('user')
-        ->where('group_id', $id)
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
-
-    return response()->json([
-        'success' => true,
-        'data' => $transactions->items(),
-        'current_page' => $transactions->currentPage(),
-        'last_page' => $transactions->lastPage(),
-    ]);
-}
+    
 
     // Optional: user-specific transactions (if you want)
     public function userTransactions(Request $request)
@@ -52,6 +62,8 @@ class TransactionController extends Controller
             'last_page' => $transactions->lastPage(),
         ]);
     }
+
+    
     public function showGroups(Request $request)
 {
     $user = $request->user();
@@ -62,18 +74,6 @@ class TransactionController extends Controller
     return view('transactions.groups', compact('groups'));
 }
 
-public function showGroupTransactions($id, Request $request)
-{
-    $user = $request->user();
 
-    // Verify membership
-    $isMember = $user->groups()->where('groups.id', $id)->exists();
-    if (!$isMember) {
-        abort(403, 'Unauthorized access');
-    }
-
-    // Just show the Blade page — transactions will be loaded by AJAX
-    return view('transactions.index', compact('id'));
-}
 
 }

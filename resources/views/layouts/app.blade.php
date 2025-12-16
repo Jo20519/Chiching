@@ -15,13 +15,7 @@
             <img src="{{ asset('images/icons/web-app-manifest-192x192.png') }}" alt="Chiching Logo" width="150">
                
             </div>
-            <ul class="nav-links">
-                <li><a href="{{ url('/') }}">Home</a></li>
-                <li><a href="{{ url('/login') }}">Login</a></li>
-                <li><a href="{{ route('register') }}">Register</a></li>
-                <li><a href="{{ url('/groups') }}">Groups</a></li>
-                <li><a href="{{ url('/transactions') }}">Transactions</a></li>
-            </ul>
+           
         </nav>
     </header>
 
@@ -29,11 +23,48 @@
         @yield('content')
     </main>
 
+    <footer style="background-color:#0d6efd; color:white; padding:40px 20px;">
+  <div class="footer-container" style="display:flex; flex-wrap:wrap; justify-content:space-between; max-width:1200px; margin:auto; gap:20px;">
+
+    <!-- About / Brand -->
+    <div class="footer-section about" style="flex:1; min-width:200px;">
+      <h2 style="margin-bottom:10px;">Chiching</h2>
+      <p>Helping you save smarter, one step at a time.</p>
+    </div>
+
+    <!-- Useful Links -->
+    <div class="footer-section links" style="flex:1; min-width:150px;">
+      <h3 style="margin-bottom:10px;">Quick Links</h3>
+      <ul style="list-style:none; padding:0;">
+        <li><a href="#" style="color:white; text-decoration:none;">How it Works</a></li>
+        <li><a href="#" style="color:white; text-decoration:none;">FAQ</a></li>
+      </ul>
+    </div>
+
+    <!-- Legal / Policy -->
+    <div class="footer-section legal" style="flex:1; min-width:150px;">
+      <h3 style="margin-bottom:10px;">Legal</h3>
+      <ul style="list-style:none; padding:0;">
+        <li><a href="#" style="color:white; text-decoration:none;">Privacy Policy</a></li>
+        <li><a href="#" style="color:white; text-decoration:none;">Terms & Conditions</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div style="text-align:center; margin-top:30px; font-size:14px; opacity:0.8;">
+    &copy; {{ date('Y') }} Chiching. All rights reserved.
+  </div>
+</footer>
+
+
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('{{ asset("service-worker.js") }}')
                 .then(() => console.log('Service Worker Registered'));
         }
     </script>
+
 </body>
+
 </html>

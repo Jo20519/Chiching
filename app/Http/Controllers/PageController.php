@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
+use App\Models\Group;
 class PageController extends Controller
 {
     public function dashboard()
@@ -15,9 +15,14 @@ class PageController extends Controller
     return view('dashboard', compact('user', 'groups', 'transactions'));
 }
 
-public function transactions($id)
+public function transactionsPage($id)
 {
-    return view('transactions');
+    $group = Group::findOrFail($id); // fetch group name
+    return view('transactions', [
+        'id' => $id,
+        'groupName' => $group->name
+    ]);
 }
+
 
 }

@@ -7,18 +7,22 @@ use Illuminate\Http\Request;
 
 class GroupController extends Controller
 {
-    // Return list of user's groups (API)
     public function index(Request $request)
     {
         $user = $request->user();
-        $groups = $user->groups()->paginate(5); // 5 per page
-        $groups = $user->groups()->withCount('members')->get();
+    
+        // Get the user's groups with member count, paginated
+        $groups = $user->groups()
+            ->select('groups.id', 'groups.name', 'groups.description', 'groups.created_by', 'groups.contribution_amount')
+            ->withCount('members')
+            ->paginate(5); // 5 groups per page
     
         return response()->json([
             'user' => $user,
             'groups' => $groups
         ]);
     }
+    
 
     // Create new group (API)
     public function store(Request $request)
@@ -87,7 +91,11 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'message' => 'Not authenticated.'], 401);
         }
 
-        $groups = $user->groups()->get(['id', 'name', 'description', 'contribution_amount']);
+        $groups = $user->groups()
+        ->select('groups.id', 'groups.name', 'groups.description', 'groups.contribution_amount')
+        ->withCount('members')
+        ->get();
+    
 
         return response()->json([
             'success' => true,
@@ -141,4 +149,11 @@ class GroupController extends Controller
             'non_contributors' => $nonContributors,
         ]);
     }
+
+    // transaction api
+public function transactions()
+{
+    return $this->hasMany(Transaction::class);
+}
+
 }   
