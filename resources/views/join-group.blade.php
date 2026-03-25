@@ -40,8 +40,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
         const data = await response.json();
+        console.log(data);
 
-        data.forEach(group => {
+        data.groups.data.forEach(group => {
             const option = document.createElement("option");
             option.value = group.name;
             option.textContent = group.name;

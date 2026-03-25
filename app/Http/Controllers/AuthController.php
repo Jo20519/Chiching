@@ -24,29 +24,29 @@ class AuthController extends Controller
             'role' => 'member',
         ]);
 
-        return response()->json($user, 201);
-    }
+        
+        Auth::login($user);
+        $request->session()->regenerate();
 
+        return redirect('/groups');
+    }
+    
     public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|string',
-            'password' => 'required|string',
-        ]);
+{
+    $request->validate([
+        'email'    => 'required|email',
+        'password' => 'required|string',
+    ]);
 
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid login'], 401);
-        }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token
-        ]);
+    if (Auth::attempt($request->only('email', 'password'))) {
+        $request->session()->regenerate();
+        return redirect()->intended('/groups');
     }
+
+    return back()
+        ->withErrors(['email' => 'Invalid email or password.'])
+        ->withInput($request->only('email'));
+}
 
     public function logout(Request $request)
     {

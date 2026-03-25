@@ -7,45 +7,46 @@ use Illuminate\Http\Request;
 
 class GroupController extends Controller
 {
-    public function index(Request $request)
-    {
-        $user = $request->user();
-    
-        // Get the user's groups with member count, paginated
-        $groups = $user->groups()
-            ->select('groups.id', 'groups.name', 'groups.description', 'groups.created_by', 'groups.contribution_amount')
-            ->withCount('members')
-            ->paginate(5); // 5 groups per page
-    
-        return response()->json([
-            'user' => $user,
-            'groups' => $groups
-        ]);
-    }
-    
+   public function index(Request $request)
+{
+    $user = $request->user();
 
+    $groups = $user->groups()
+        ->select('groups.id', 'groups.name', 'groups.description', 'groups.contribution_amount')
+        ->withCount('members')
+        ->get();
+
+    return view('groups', compact('groups'));
+}
+
+public function dashboard(Request $request)
+{
+    $groups = $request->user()->groups()
+        ->select('groups.id', 'groups.name', 'groups.description')
+        ->get();
+
+    return view('dashboard', compact('groups'));
+}
     // Create new group (API)
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'description' => 'nullable|string',
-            'contribution_amount' => 'nullable|numeric',
-        ]);
+   public function store(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string',
+        'description' => 'nullable|string',
+        'contribution_amount' => 'nullable|numeric',
+    ]);
 
-        $group = Group::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'contribution_amount' => $request->contribution_amount,
-            'created_by' => $request->user()->id,
-        ]);
+    $group = Group::create([
+        'name' => $request->name,
+        'description' => $request->description,
+        'contribution_amount' => $request->contribution_amount,
+        'created_by' => $request->user()->id,
+    ]);
 
-        // Add creator as admin
-        $group->members()->attach($request->user()->id, ['role' => 'admin']);
+    $group->members()->attach($request->user()->id, ['role' => 'admin']);
 
-        return response()->json($group, 201);
-    }
-
+    return redirect('/groups')->with('success', 'Group created successfully!');
+}
     // Join a group (API)
     public function joinGroup(Request $request)
     {
@@ -104,11 +105,48 @@ class GroupController extends Controller
     }
 
     // ✅ Web route: show group details page (loads Blade view)
-    public function show($id)
-    {
-        return view('group-details', compact('id'));
-    }
+   public function show($id, Request $request)
+{
+    $user = $request->user();
 
+    $group = Group::with(['members', 'contributions.user'])->findOrFail($id);
+
+    // Check admin
+    $isAdmin = $group->members()
+        ->where('user_id', $user->id)
+        ->wherePivot('role', 'admin')
+        ->exists();
+
+    // Total savings
+    $totalSavings = $group->contributions->sum('amount');
+
+    // Contributors
+    $contributors = $group->contributions
+        ->groupBy('user_id')
+        ->map(function ($contribs) {
+            $user = $contribs->first()->user;
+
+            return [
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'total_contributed' => $contribs->sum('amount'),
+                'last_contribution' => $contribs->max('created_at'),
+            ];
+        })->values();
+
+    // Non-contributors
+    $nonContributors = $group->members->filter(function ($member) use ($contributors) {
+        return !$contributors->pluck('user_id')->contains($member->id);
+    })->values();
+
+    return view('group-details', [
+        'group' => $group,
+        'contributors' => $contributors,
+        'nonContributors' => $nonContributors,
+        'totalSavings' => $totalSavings,
+        'isAdmin' => $isAdmin
+    ]);
+}
     // ✅ API route: return actual group data as JSON
     public function apiShow($id)
     {

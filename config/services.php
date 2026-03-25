@@ -31,4 +31,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'mpesa' => [
+        'consumer_key' => env('MPESA_CONSUMER_KEY'),
+        'consumer_secret' => env('MPESA_CONSUMER_SECRET'),
+        'shortcode' => env('MPESA_B2C_SHORTCODE'),
+        'initiator' => env('MPESA_INITIATOR_NAME'),
+        'security_credential' => env('MPESA_SECURITY_CREDENTIAL'),
+    ],
+    
 ];

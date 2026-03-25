@@ -3,18 +3,34 @@
 @section('content')
 <div class="container" style="max-width:600px; margin-top:40px;">
     <h2 style="text-align:center; color:#0d6efd;">Create a New Group</h2>
-    
-    <form id="createGroupForm" style="margin-top:30px;">
+
+    @if(session('success'))
+        <p style="color:green; text-align:center;">{{ session('success') }}</p>
+    @endif
+
+    @if($errors->any())
+        <p style="color:red; text-align:center;">{{ $errors->first() }}</p>
+    @endif
+
+    <form method="POST" action="/groups" style="margin-top:30px;">
+        @csrf
+
         <div style="margin-bottom:15px;">
             <label for="groupName" style="display:block; font-weight:bold;">Group Name:</label>
-            <input type="text" id="groupName" name="name" required
+            <input type="text" id="groupName" name="name" required value="{{ old('name') }}"
                    style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;">
         </div>
 
         <div style="margin-bottom:15px;">
             <label for="description" style="display:block; font-weight:bold;">Description:</label>
             <textarea id="description" name="description" rows="3"
-                      style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;"></textarea>
+                      style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;">{{ old('description') }}</textarea>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <label for="contribution_amount" style="display:block; font-weight:bold;">Contribution Amount (KES):</label>
+            <input type="number" id="contribution_amount" name="contribution_amount" value="{{ old('contribution_amount') }}"
+                   style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;">
         </div>
 
         <button type="submit"
@@ -22,50 +38,5 @@
             Create Group
         </button>
     </form>
-
-    <p id="message" style="margin-top:20px; text-align:center;"></p>
 </div>
-
-<script>
-document.getElementById("createGroupForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const token = localStorage.getItem("auth_token");
-    const name = document.getElementById("groupName").value;
-    const description = document.getElementById("description").value;
-    const message = document.getElementById("message");
-
-    if (!token) {
-        window.location.href = "/login";
-        return;
-    }
-
-    try {
-        const response = await fetch("http://127.0.0.1:8000/api/groups", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token,
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({ name, description })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            message.style.color = "green";
-            message.textContent = "✅ Group created successfully!";
-            setTimeout(() => window.location.href = "/dashboard", 1500);
-        } else {
-            message.style.color = "red";
-            message.textContent = data.message || "❌ Failed to create group.";
-        }
-    } catch (error) {
-        console.error("Error creating group:", error);
-        message.style.color = "red";
-        message.textContent = "⚠️ Something went wrong. Try again later.";
-    }
-});
-</script>
 @endsection

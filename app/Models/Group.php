@@ -23,6 +23,14 @@ class Group extends Model
                     ->withTimestamps();
     }
 
+
+    public function groups()
+{
+    return $this->belongsToMany(Group::class, 'group_user')
+                ->withPivot('role')
+                ->withTimestamps();
+}
+
     public function contributions()
     {
         return $this->hasMany(Contribution::class);
@@ -42,4 +50,11 @@ class Group extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function isAdmin($user)
+{
+    return $this->created_by === $user->id;
+}
+
+
 }
